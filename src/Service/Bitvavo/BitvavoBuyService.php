@@ -80,6 +80,7 @@ class BitvavoBuyService implements BuyServiceInterface
                 : 0)
             ->setDisplayAmountBought($orderInfo[self::FILLED_AMOUNT].' BTC')
             ->setDisplayAmountSpent($orderInfo['filledAmountQuote'].' '.$this->baseCurrency)
+            ->setDisplayAmountSpentCurrency($this->baseCurrency)
             ->setDisplayAveragePrice($this->getAveragePrice($orderInfo).' '.$this->baseCurrency)
             ->setDisplayFeesSpent($orderInfo['feePaid'].' '.$orderInfo['feeCurrency'])
         ;

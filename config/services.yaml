@@ -28,6 +28,10 @@ parameters:
   env(WITHDRAW_XPUB): '%env(BL3P_WITHDRAW_XPUB)%'
   env(EXCHANGE): 'bl3p'
   env(BASE_CURRENCY): 'EUR'
+  env(MAILER_DSN): 'null://null'
+  env(MAILER_TO): ~
+  env(MAILER_FROM): ~
+  env(MAILER_SUBJECT_PREFIX): '%application_title%'
 
   # xpub fallback settings
   env(XPUB_PYTHON_CLI): '/usr/bin/python3 /app/resources/xpub_derive/main.py'
@@ -114,14 +118,6 @@ services:
       - '%env(string:BL3P_PUBLIC_KEY)%'
       - '%env(string:BL3P_PRIVATE_KEY)%'
 
-  http_client.bl3p:
-    class: Symfony\Contracts\HttpClient\HttpClientInterface
-    factory:
-      - Symfony\Component\HttpClient\HttpClient
-      - create
-    arguments:
-      - base_uri: '%env(string:BL3P_API_URL)%'
-
   api.client.bitvavo:
     class: Jorijn\Bitcoin\Dca\Client\BitvavoClient
     arguments:
@@ -129,14 +125,6 @@ services:
       - '@logger'
       - '%env(string:BITVAVO_API_KEY)%'
       - '%env(string:BITVAVO_API_SECRET)%'
-
-  http_client.bitvavo:
-    class: Symfony\Contracts\HttpClient\HttpClientInterface
-    factory:
-      - Symfony\Component\HttpClient\HttpClient
-      - create
-    arguments:
-      - base_uri: '%env(string:BITVAVO_API_URL)%'
 
   api.client.kraken:
     class: Jorijn\Bitcoin\Dca\Client\KrakenClient
@@ -146,6 +134,25 @@ services:
       - '%env(string:KRAKEN_API_KEY)%'
       - '%env(string:KRAKEN_PRIVATE_KEY)%'
 
+  ######################################################################
+  # HTTP Clients
+  ######################################################################
+  http_client.bl3p:
+    class: Symfony\Contracts\HttpClient\HttpClientInterface
+    factory:
+      - Symfony\Component\HttpClient\HttpClient
+      - create
+    arguments:
+      - base_uri: '%env(string:BL3P_API_URL)%'
+
+  http_client.bitvavo:
+    class: Symfony\Contracts\HttpClient\HttpClientInterface
+    factory:
+      - Symfony\Component\HttpClient\HttpClient
+      - create
+    arguments:
+      - base_uri: '%env(string:BITVAVO_API_URL)%'
+
   http_client.kraken:
     class: Symfony\Contracts\HttpClient\HttpClientInterface
     factory:
@@ -153,6 +160,12 @@ services:
       - create
     arguments:
       - base_uri: '%env(string:KRAKEN_API_URL)%'
+
+  http_client:
+    class: Symfony\Contracts\HttpClient\HttpClientInterface
+    factory:
+      - Symfony\Component\HttpClient\HttpClient
+      - create
 
   ######################################################################
   # Address Providers
@@ -234,6 +247,22 @@ services:
       - '@logger'
     tags:
       - { name: kernel.event_listener, event: Jorijn\Bitcoin\Dca\Event\WithdrawSuccessEvent, method: onWithdrawSucces }
+
+  event_listener.buy_notification:
+    class: Jorijn\Bitcoin\Dca\EventListener\NotifyOnBuyListener
+    arguments:
+      - '@mailer'
+      - '@html_to_markdown'
+      - '%env(MAILER_TO)%'
+      - '%env(MAILER_FROM)%'
+      - '%env(MAILER_SUBJECT_PREFIX)%'
+      - '%env(EXCHANGE)%'
+      - '%application.path%/resources/templates/buy_notification.html.php'
+      - '%application.path%/resources/images/logo-small.png'
+      - '%application.path%/resources/images/github-logo-colored.png'
+      - '%application.path%/resources/notification-quotes.json'
+    tags:
+      - { name: kernel.event_listener, event: Jorijn\Bitcoin\Dca\Event\BuySuccessEvent, method: onBuy }
 
   ######################################################################
   # Services
@@ -354,6 +383,13 @@ services:
     class: Symfony\Component\EventDispatcher\EventDispatcher
     public: true
 
+  html_to_markdown:
+    class: League\HTMLToMarkdown\HtmlConverter
+    public: true
+    arguments:
+      -
+        - strip_tags: true
+
   logger.stream_handler:
     class: Monolog\Handler\StreamHandler
     arguments:
@@ -364,3 +400,37 @@ services:
     arguments:
       - 'bitcoin-dca'
       - ['@logger.stream_handler']
+
+  ######################################################################
+  # Symfony Mailer
+  ######################################################################
+  mailer:
+    class: Symfony\Component\Mailer\Mailer
+    arguments:
+      - '@mailer.transport.esmtp'
+      - ~
+      - '@event_dispatcher'
+
+
+  mailer.transport.esmtp.dsn:
+    class: Symfony\Component\Mailer\Transport\Dsn
+    factory:
+      - 'Symfony\Component\Mailer\Transport\Dsn'
+      - 'fromString'
+    arguments:
+      - '%env(MAILER_DSN)%'
+
+  mailer.transport.esmtp.factory:
+    class: Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory
+    arguments:
+      - '@event_dispatcher'
+      - '@http_client'
+      - '@logger'
+
+  mailer.transport.esmtp:
+    class: Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport
+    factory:
+      - '@mailer.transport.esmtp.factory'
+      - 'create'
+    arguments:
+      - '@mailer.transport.esmtp.dsn'

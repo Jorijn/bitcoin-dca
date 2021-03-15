@@ -168,6 +168,7 @@ final class BuyCommandTest extends TestCase
         $orderInformation = (new CompletedBuyOrder())
             ->setDisplayAmountBought(random_int(1000, 2000).' BTC')
             ->setDisplayAmountSpent(random_int(1000, 2000).' EUR')
+            ->setDisplayAmountSpentCurrency('EUR')
             ->setDisplayAveragePrice(random_int(1000, 2000).' EUR')
             ->setDisplayFeesSpent('0.'.random_int(1000, 2000).' BTC')
         ;

@@ -27,6 +27,7 @@ final class CompletedBuyOrderTest extends TestCase
             ->setDisplayFeesSpent($feesSpent = '0.'.random_int(1000, 2000).' BTC')
             ->setDisplayAveragePrice($averagePrice = '€'.random_int(1000, 2000))
             ->setDisplayAmountSpent($amountSpent = '€'.random_int(1000, 2000))
+            ->setDisplayAmountSpentCurrency($currency = 'EUR')
             ->setDisplayAmountBought($amountBought = random_int(1000, 2000).' BTC')
         ;
 
@@ -35,6 +36,7 @@ final class CompletedBuyOrderTest extends TestCase
         static::assertSame($feesSpent, $dto->getDisplayFeesSpent());
         static::assertSame($averagePrice, $dto->getDisplayAveragePrice());
         static::assertSame($amountSpent, $dto->getDisplayAmountSpent());
+        static::assertSame($currency, $dto->getDisplayAmountSpentCurrency());
         static::assertSame($amountBought, $dto->getDisplayAmountBought());
     }
 }

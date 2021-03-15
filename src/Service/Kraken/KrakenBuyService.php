@@ -153,6 +153,7 @@ class KrakenBuyService implements BuyServiceInterface
             ->setFeesInSatoshis(0)
             ->setDisplayAmountBought($orderInfo['vol'].' BTC')
             ->setDisplayAmountSpent($orderInfo['cost'].' '.$this->baseCurrency)
+            ->setDisplayAmountSpentCurrency($this->baseCurrency)
             ->setDisplayAveragePrice($orderInfo['price'].' '.$this->baseCurrency)
             ->setDisplayFeesSpent($orderInfo['fee'].' '.$this->baseCurrency)
         ;

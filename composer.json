@@ -22,7 +22,9 @@
         "bitwasp/bitcoin": "^1.0",
         "symfony/event-dispatcher": "^5.0",
         "monolog/monolog": "^2.0",
-        "symfony/http-client": "^5.0"
+        "symfony/http-client": "^5.0",
+        "symfony/mailer": "^5.1",
+        "league/html-to-markdown": "^4.9"
     },
     "autoload": {
         "psr-4": {
