@@ -22,7 +22,7 @@ RUN composer install \
 ##################################################################################################################
 # Base Stage
 ##################################################################################################################
-FROM php:7.4-cli-alpine3.12 as base_image
+FROM php:8.0.0-cli-alpine3.12 as base_image
 
 RUN apk --no-cache update \
     && apk --no-cache add gmp-dev python3 py3-pip \
