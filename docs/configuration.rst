@@ -68,6 +68,13 @@ This is the private part of your API connection to BL3P. It's an encoded secret 
 
 **Example**: ``BL3P_PRIVATE_KEY=aHR0cHM6Ly93d3cueW91dHViZS5jb20vd2F0Y2g/dj1kUXc0dzlXZ1hjUQ==``
 
+BL3P_FEE_PRIORITY
+"""""""""""""""""
+This will send the withdrawal as low, medium or high priority. The default is low. Low priority is the cheapest but
+will take the longest to confirm. High priority is the most expensive but will be confirmed the fastest.
+
+**Example**: ``BL3P_FEE_PRIORITY=medium``
+
 BL3P_API_URL (optional)
 """""""""""""""""""""""
 The endpoint where the tool should connect to.

@@ -21,9 +21,16 @@ use Psr\Log\LoggerInterface;
 class Bl3pWithdrawService implements WithdrawServiceInterface
 {
     final public const BL3P = 'bl3p';
+    final public const DEFAULT_FEE_PRIORITY = 'low';
+    final public const FEE_COST_LOW = 680;
+    final public const FEE_COST_MEDIUM = 5000;
+    final public const FEE_COST_HIGH = 10000;
 
-    public function __construct(protected Bl3pClientInterface $bl3pClient, protected LoggerInterface $logger)
-    {
+    public function __construct(
+        protected Bl3pClientInterface $bl3pClient,
+        protected LoggerInterface $logger,
+        protected string $configuredFeePriority = self::DEFAULT_FEE_PRIORITY
+    ) {
     }
 
     public function withdraw(int $balanceToWithdraw, string $addressToWithdrawTo): CompletedWithdraw
@@ -33,6 +40,7 @@ class Bl3pWithdrawService implements WithdrawServiceInterface
             'currency' => 'BTC',
             'address' => $addressToWithdrawTo,
             'amount_int' => $netAmountToWithdraw,
+            'fee_priority' => $this->getFeePriority(),
         ]);
 
         return new CompletedWithdraw($addressToWithdrawTo, $netAmountToWithdraw, $response['data']['id']);
@@ -47,11 +55,24 @@ class Bl3pWithdrawService implements WithdrawServiceInterface
 
     public function getWithdrawFeeInSatoshis(): int
     {
-        return 5000;
+        return match ($this->getFeePriority()) {
+            'low' => self::FEE_COST_LOW,
+            'medium' => self::FEE_COST_MEDIUM,
+            'high' => self::FEE_COST_HIGH,
+        };
     }
 
     public function supportsExchange(string $exchange): bool
     {
         return self::BL3P === $exchange;
+    }
+
+    protected function getFeePriority(): string
+    {
+        return match ($this->configuredFeePriority) {
+            'medium' => 'medium',
+            'high' => 'high',
+            default => 'low',
+        };
     }
 }

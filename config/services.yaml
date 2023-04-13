@@ -11,6 +11,7 @@ parameters:
   env(BL3P_PRIVATE_KEY): ''
   env(BL3P_WITHDRAW_ADDRESS): ''
   env(BL3P_WITHDRAW_XPUB): ~
+  env(BL3P_FEE_PRIORITY): 'low'
 
   # bitvavo settings
   env(BITVAVO_API_URL): 'https://api.bitvavo.com/v2/'
@@ -410,6 +411,7 @@ services:
     arguments:
       - '@api.client.bl3p'
       - '@logger'
+      - '%env(BL3P_FEE_PRIORITY)%'
     tags:
       - { name: exchange-withdraw-service }
 
